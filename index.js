@@ -113,6 +113,77 @@ app.get("/user/:id/edit",(req,res)=>{
         }
         });
 
+app.get("/user/new",(req,res)=>{
+    res.render("new.ejs")
+})
+    
+app.post("/user/new",(req,res)=>{
+    const id = faker.string.uuid();
+
+    let {username,email,password}=req.body;
+    console.log(req.body);
+
+    let q = `INSERT INTO user (id, username, email, password) VALUES (?, ?, ?, ?)`;
+    try {
+        connection.query(q, [id, username, email, password],(err, result) => {
+            if (err) throw err;
+            console.log("added new user");
+            res.redirect("/user")
+            
+            }
+        );}catch (err) {
+            console.log(err);
+            res.send("some error in Db");
+    
+    }
+});
+
+app.get("/user/:id/delete", (req, res) => {
+    console.log("yes")
+    let { id } = req.params;
+    let q = `SELECT * FROM user WHERE id='${id}'`;
+  
+    try {
+      connection.query(q, (err, result) => {
+        if (err) throw err;
+        let user = result[0];
+        res.render("delete.ejs", { user });
+      });
+    } catch (err) {
+      res.send("some error with DB");
+    }
+  });
+
+app.delete("/user/:id/",(req,res)=>{
+    let {id}= req.params;
+    let {password}=req.body;
+
+    let q= `select * from user where id='${id}'`;
+    try {
+        connection.query(q, (err, result) => {
+            if (err) throw err;
+            let user=result[0];
+            if (password !== user.password){
+                res.send("wrong");
+            }
+            else{
+                let q2=`delete from user where id='${id}'`;
+                connection.query(q2,[id],(err,result)=>{
+                    if(err) throw err;
+                    res.redirect("/user");
+                });
+            }
+        });
+    } catch (err) {
+        console.log(err);
+        res.send("some error in Db");
+    }
+    });
+
+
+
+
+
 
 
 
